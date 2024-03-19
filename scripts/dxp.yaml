@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: liferay-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: liferay
+  template:
+    metadata:
+      labels:
+        app: liferay
+    spec:
+      containers:
+      - name: liferay
+        image: liferay/portal:7.4.3.112-ga112
+        resources:
+          limits:
+            memory: "8Gi"
+        ports:
+        - containerPort: 8080
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: liferay-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: liferay
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
