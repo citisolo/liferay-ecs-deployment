@@ -6,5 +6,5 @@ variable region {
 
 variable liferay_image {
     description = "The Liferay Docker image to deploy"
-    default     = "liferay/portal:7.4.3.112-ga112"
+    default     = "nginx:stable-alpine3.17-perl"
 }

@@ -7,7 +7,7 @@ resource "aws_ecs_task_definition" "liferay_task" {
   network_mode          = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   cpu                   = "2048"
-  memory                = "4096"
+  memory                = "8192"
   execution_role_arn    = aws_iam_role.ecs_task_execution_role.arn
 
   container_definitions = jsonencode([
@@ -15,15 +15,23 @@ resource "aws_ecs_task_definition" "liferay_task" {
       name      = "liferay",
       image     = var.liferay_image,
       cpu       = 2048,
-      memory    = 4096,
+      memory    = 8192,
       essential = true,
       portMappings = [
         {
-          containerPort = 8080,
-          hostPort      = 8080,
+          containerPort = 80,
+          hostPort      = 80,
           protocol      = "tcp"
         }
       ]
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          awslogs-group         = aws_cloudwatch_log_group.liferay_log_group.name
+          awslogs-region        = "eu-west-1"
+          awslogs-stream-prefix = "ecs"
+        }
+      }
     }
   ])
 }
@@ -51,12 +59,22 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
-
 resource "aws_ecs_service" "liferay_service" {
   name            = "liferay-service"
   cluster         = aws_ecs_cluster.liferay_cluster.id
   task_definition = aws_ecs_task_definition.liferay_task.arn
   launch_type     = "FARGATE"
+  desired_count   = 1
+  depends_on      = [
+    aws_alb_listener.liferay_listener,
+  ]
+
+  load_balancer {
+    target_group_arn = aws_alb_target_group.liferay_tg.arn
+    container_name   = "liferay"
+    container_port   = 80
+  }
+
 
   network_configuration {
     subnets         = aws_subnet.ecs_subnet[*].id # Specify your subnets
@@ -64,6 +82,41 @@ resource "aws_ecs_service" "liferay_service" {
     security_groups = [aws_security_group.liferay_sg.id] # Specify your security group
   }
 
-  desired_count = 1
+}
+
+resource "aws_cloudwatch_log_group" "liferay_log_group" {
+  name = "/ecs/liferay"
+}
+
+resource "aws_alb" "liferay_alb" {
+  name               = "liferay-alb"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.liferay_sg.id]
+  subnets            = aws_subnet.ecs_subnet[*].id 
+}
+
+resource "aws_alb_target_group" "liferay_tg" {
+  name     = "liferay-tg"
+  port     = 80
+  protocol = "HTTP"
+  vpc_id   = aws_vpc.ecs_vpc.id 
+  target_type = "ip"
+  health_check {
+    path                = "/"
+    protocol            = "HTTP"
+    matcher             = "200"
+  }
+}
+
+resource "aws_alb_listener" "liferay_listener" {
+  load_balancer_arn = aws_alb.liferay_alb.arn
+  port              = "80"
+  protocol          = "HTTP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_alb_target_group.liferay_tg.arn
+  }
 }
 

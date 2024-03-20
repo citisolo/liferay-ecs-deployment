@@ -1,5 +1,5 @@
 terraform {
-    backend "s3"{}
+    # backend "s3"{}
     required_providers {
         aws = {
         source  = "hashicorp/aws"
@@ -22,11 +22,16 @@ resource "aws_vpc" "ecs_vpc" {
   }
 }
 
+data "aws_availability_zones" "available" {
+  state = "available"
+}
+
 resource "aws_subnet" "ecs_subnet" {
   count                   = 2 # Create 2 subnets
   vpc_id                  = aws_vpc.ecs_vpc.id
   cidr_block              = count.index == 0 ? "10.0.1.0/24" : "10.0.2.0/24"
   map_public_ip_on_launch = true # Enables public IP assignment
+  availability_zone       = element(data.aws_availability_zones.available.names, count.index)
 
   tags = {
     Name = "ecs_subnet-${count.index}"
@@ -67,6 +72,13 @@ resource "aws_security_group" "liferay_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   # Allow all outbound traffic
   egress {
     from_port   = 0
@@ -79,7 +91,6 @@ resource "aws_security_group" "liferay_sg" {
     Name = "liferay-ecs-sg"
   }
 }
-
 
 resource "aws_route_table_association" "ecs_rta" {
   count          = length(aws_subnet.ecs_subnet)
