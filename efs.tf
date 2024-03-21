@@ -43,7 +43,7 @@ resource "aws_efs_access_point" "lambda_ap" {
   }
 
   root_directory {
-    path = "/" 
+    path = "/${var.liferay_deploy_dir}" 
     creation_info {
       owner_gid   = 1001
       owner_uid   = 1001
@@ -51,5 +51,3 @@ resource "aws_efs_access_point" "lambda_ap" {
     }
   }
 }
-
-

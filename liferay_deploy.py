@@ -11,7 +11,7 @@ def lambda_handler(event, context):
     object_key = urllib.parse.unquote_plus(event['Records'][0]['s3']['object']['key'], encoding='utf-8')
 
     # The target EFS path (Ensure the path exists or adapt the code to create it)
-    efs_target_path = '/mnt/liferay_deploy'
+    efs_target_path = '/mnt/liferay/deploy'
 
     # The full path for the file on EFS (adjust as needed)
     file_path_on_efs = os.path.join(efs_target_path, os.path.basename(object_key))

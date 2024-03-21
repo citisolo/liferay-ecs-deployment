@@ -38,3 +38,5 @@ terraform.rc
 build/*
 
 .terraform.lock.hcl
+
+activation-key-*.xml

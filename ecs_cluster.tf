@@ -24,14 +24,14 @@ resource "aws_ecs_task_definition" "liferay_task" {
         },
         {
           name  = "LIFERAY_AUTO_PERIOD_DEPLOY_PERIOD_DEPLOY_PERIOD_DIR"
-          value = "/mnt/liferay/deploy"
+          value = "/mnt/${var.liferay_deploy_dir}"
         }
       ]
 
       mountPoints = [
         {
           sourceVolume  = "liferay-deploy"
-          containerPath = "/mnt/liferay/deploy"
+          containerPath = "/mnt/${var.liferay_deploy_dir}"
           readOnly      = false
         }
       ]
@@ -59,8 +59,12 @@ resource "aws_ecs_task_definition" "liferay_task" {
     name = "liferay-deploy"
     efs_volume_configuration {
       file_system_id     = aws_efs_file_system.liferay_efs.id
-      root_directory     = "/"
+      root_directory     = "/${var.liferay_deploy_dir}"
       transit_encryption = "ENABLED"
+      authorization_config {
+        access_point_id = aws_efs_access_point.lambda_ap.id
+        # iam             = "ENABLED"
+      }
     }
   }
 
