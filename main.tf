@@ -64,20 +64,29 @@ resource "aws_security_group" "liferay_sg" {
   description = "Security group for Liferay ECS service"
   vpc_id      = aws_vpc.ecs_vpc.id
 
+  ingress {
+    description = "NFS for EFS"
+    from_port   = 2049
+    to_port     = 2049
+    protocol    = "tcp"
+    self        = true # Allows traffic from resources within the same security group
+  }
+
   # Allow inbound HTTP traffic on port 8080
   ingress {
     from_port   = 8080
     to_port     = 8080
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    security_groups = [aws_security_group.alb_sg.id]
+    # cidr_blocks = [aws_security_group.alb_sg.id]
   }
 
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+  # ingress {
+  #   from_port   = 80
+  #   to_port     = 80
+  #   protocol    = "tcp"
+  #   cidr_blocks = ["0.0.0.0/0"]
+  # }
 
   # Allow all outbound traffic
   egress {
@@ -98,3 +107,33 @@ resource "aws_route_table_association" "ecs_rta" {
   route_table_id = aws_route_table.ecs_route_table.id
 }
 
+resource "aws_security_group" "alb_sg" {
+  name        = "alb-sg"
+  description = "ALB security group for Liferay application"
+  vpc_id      = aws_vpc.ecs_vpc.id
+
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "alb-sg"
+  }
+}
