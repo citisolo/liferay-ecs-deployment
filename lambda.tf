@@ -62,7 +62,7 @@ resource "aws_lambda_function" "my_lambda" {
 
   file_system_config {
     arn              = aws_efs_access_point.lambda_ap.arn
-    local_mount_path = "/mnt/liferay/deploy"
+    local_mount_path = "/mnt/${var.liferay_deploy_dir}"
   }
 
   vpc_config {
