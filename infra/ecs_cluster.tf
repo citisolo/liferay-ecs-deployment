@@ -21,11 +21,11 @@ resource "aws_ecs_task_definition" "liferay_task" {
         {
           name  = "LIFERAY_VIRTUAL_PERIOD_HOSTS_PERIOD_VALID_PERIOD_HOSTS"
           value = "*"
-        },
-        {
-          name  = "LIFERAY_AUTO_PERIOD_DEPLOY_PERIOD_DEPLOY_PERIOD_DIR"
-          value = "/mnt/${var.liferay_deploy_dir}"
         }
+        # {
+        #   name  = "LIFERAY_AUTO_PERIOD_DEPLOY_PERIOD_DEPLOY_PERIOD_DIR"
+        #   value = "/mnt/${var.liferay_deploy_dir}"
+        # }
       ]
 
       mountPoints = [

@@ -17,6 +17,7 @@ Before you begin, ensure you have the following prerequisites installed and conf
    Open a terminal in the root directory of your project and run the following command to initialize Terraform:
 
    ```bash
+   cd infra
    terraform init
 
 2. **Review the Terraform Plan and Apply**

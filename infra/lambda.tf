@@ -48,8 +48,8 @@ resource "aws_iam_policy_attachment" "lambda_efs_policy_attachment" {
 
 data "archive_file" "lambda_zip" {
   type        = "zip"
-  source_file = "${path.module}/liferay_deploy.py"
-  output_path = "${path.module}/build/liferay_deploy.zip"
+  source_file = "${path.module}/../src/liferay_deploy.py"
+  output_path = "${path.module}/../build/liferay_deploy.zip"
 }
 
 
@@ -58,7 +58,7 @@ resource "aws_lambda_function" "my_lambda" {
   role          = aws_iam_role.lambda_execution_role.arn
   handler       = "liferay_deploy.lambda_handler"
   runtime       = "python3.8"
-  filename      = "build/liferay_deploy.zip"
+  filename      = "${path.module}/../build/liferay_deploy.zip"
 
   file_system_config {
     arn              = aws_efs_access_point.lambda_ap.arn
