@@ -1,4 +1,4 @@
-# Deployment Guide
+# LifeRay DXP Dev Container Image Deployment Guide
 
 This guide provides the steps to deploy your application using Terraform. Follow these steps to set up your architecture and access your application via the web.
 
@@ -35,3 +35,9 @@ Before you begin, ensure you have the following prerequisites installed and conf
    Outputs:
 
    alb_dns_name = "your-alb-dns-name.eu-west-1.elb.amazonaws.com"
+
+4. **Shutdown**
+   After usage the app can be shutdown via Terraform (all data will be destroyed.)
+
+   ```bash
+   terraform destroy
